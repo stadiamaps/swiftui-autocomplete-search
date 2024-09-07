@@ -3,12 +3,12 @@ import MapKit
 import StadiaMaps
 import SwiftUI
 
-struct SearchResult: View {
+public struct SearchResult: View {
     let feature: PeliasGeoJSONFeature
     let relativeTo: CLLocation?
     let formatter: MKDistanceFormatter
 
-    init(feature: PeliasGeoJSONFeature, relativeTo: CLLocation?, formatter: MKDistanceFormatter) {
+    public init(feature: PeliasGeoJSONFeature, relativeTo: CLLocation?, formatter: MKDistanceFormatter) {
         self.feature = feature
         self.relativeTo = relativeTo
         self.formatter = formatter
@@ -16,14 +16,14 @@ struct SearchResult: View {
 
     /// Creates a search result view wtih a default MKDistanceFormatter
     /// using the abbreviated unit style.
-    init(feature: PeliasGeoJSONFeature, relativeTo: CLLocation?) {
+    public init(feature: PeliasGeoJSONFeature, relativeTo: CLLocation?) {
         let formatter = MKDistanceFormatter()
         formatter.unitStyle = .abbreviated
 
         self.init(feature: feature, relativeTo: relativeTo, formatter: formatter)
     }
 
-    var body: some View {
+    public var body: some View {
         HStack(spacing: 8) {
             feature.properties?.layer?.iconImage
                 .frame(width: 18)

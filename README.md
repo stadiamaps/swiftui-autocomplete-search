@@ -46,3 +46,22 @@ AutocompleteSearch(apiKey: stadiaMapsAPIKey, userLocation: userLocation.clLocati
     }
 }
 ```
+
+## Customizing the result views
+
+Don't like the built-in search result view?
+You can replace it with any SwiftUI view,
+allowing you to customize the list item views.
+
+```swift
+AutocompleteSearch(apiKey: previewApiKey, onResultSelected: { selection in
+    // TODO: Selection logic
+}) { feature, _ in
+    // This custom view builder will have a classic table cell layout,
+    // where the image is always a laser burst from SFSymbols.
+    HStack {
+        Image(systemName: "laser.burst")
+        Text(feature.properties?.name ?? "<No name>")
+    }
+}
+```
