@@ -3,6 +3,9 @@ import MapKit
 import StadiaMaps
 import SwiftUI
 
+/// A search result view featuring a category image from SFSymbols,
+/// the name of the feature, and (where available) some location context
+/// such as the city, region, or country containing the result.
 public struct SearchResult: View {
     let feature: PeliasGeoJSONFeature
     let relativeTo: CLLocation?

@@ -1,5 +1,7 @@
 # Stadia Maps Autocomplete Search for SwiftUI
 
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fstadiamaps%2Fswiftui-autocomplete-search%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/stadiamaps/swiftui-autocomplete-search) [![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fstadiamaps%2Fswiftui-autocomplete-search%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/stadiamaps/swiftui-autocomplete-search)
+
 This package helps you easily add geographic autocomplete search to a SwiftUI app. 
 
 * Displays a search box and list which you can embed in other views
