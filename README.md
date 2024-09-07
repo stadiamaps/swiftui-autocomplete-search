@@ -9,7 +9,7 @@ This package helps you easily add geographic autocomplete search to a SwiftUI ap
 * Can bias search results to be nearby a specific location
 * Automatically localizes place names based on the user's device settings (where available)
 
-![Screenshot](screenshot.png)
+![Screenshot](Sources/StadiaMapsAutocompleteSearch/Documentation.docc/screenshot.png)
 
 ## Installation
 
