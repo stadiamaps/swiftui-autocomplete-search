@@ -1,6 +1,6 @@
 # Stadia Maps Autocomplete Search for SwiftUI
 
-This package lets you add geographic autocomplete search to a SwiftUI app. 
+This package helps you easily add geographic autocomplete search to a SwiftUI app. 
 
 * Displays a search box and list which you can embed in other views
 * Provides a callback handler with the result details when users tap a result
