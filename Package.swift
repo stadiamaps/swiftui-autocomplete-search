@@ -17,7 +17,7 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/stadiamaps/stadiamaps-api-swift", from: "4.0.0"),
+        .package(url: "https://github.com/stadiamaps/stadiamaps-api-swift", from: "4.1.0"),
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.

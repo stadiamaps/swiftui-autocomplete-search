@@ -32,10 +32,8 @@ public struct SearchResult: View {
                 .frame(width: 18)
             VStack(alignment: .leading) {
                 Text(feature.properties?.name ?? "<No info>")
-                if let subtitle = feature.subtitle {
-                    Text(subtitle)
-                        .font(.caption)
-                }
+                Text(feature.subtitle)
+                    .font(.caption)
             }
             if let relativeTo {
                 let distance = relativeTo.distance(from: CLLocation(latitude: feature.geometry.coordinates[1], longitude: feature.geometry.coordinates[0]))

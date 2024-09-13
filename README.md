@@ -57,7 +57,7 @@ allowing you to customize the list item views.
 
 ```swift
 AutocompleteSearch(apiKey: previewApiKey, onResultSelected: { selection in
-    // TODO: Selection logic
+    // TODO: Result selection handler
 }) { feature, _ in
     // This custom view builder will have a classic table cell layout,
     // where the image is always a laser burst from SFSymbols.
