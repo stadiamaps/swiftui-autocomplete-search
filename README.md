@@ -26,6 +26,10 @@ You can create an API key for free
 [here](https://client.stadiamaps.com/signup/?utm_source=github&utm_campaign=sdk_readme&utm_content=swiftui_autocomplete_readme)
 (no credit card required).
 
+Note that while autocomplete search is available on the free tier,
+deep search (on submit) with support for advanced features like missing address interpolation
+is only available with a paid subscription.
+
 ## Using the SwiftUI view
 
 ```swift
