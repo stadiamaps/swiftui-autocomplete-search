@@ -1,4 +1,5 @@
 import Foundation
+import CoreLocation
 import StadiaMaps
 import SwiftUI
 
@@ -29,6 +30,22 @@ public extension PeliasGeoJSONFeature {
         }
 
         return components.compactMap({ $0 }).joined(separator: ", ")
+    }
+
+    /// The approximate center of the feature.
+    ///
+    /// Note that the API does not currently include any more info than a bounding box for non-point features.
+    /// We just compute the mathematical middle for now.
+    var center: CLLocation? {
+        if (geometry.type == .point) {
+            return CLLocation(latitude: geometry.coordinates[1], longitude: geometry.coordinates[0])
+        } else if let bbox {
+            let lat = (bbox[1] + bbox[3]) / 2
+            let lon = (bbox[0] + bbox[2]) / 2
+            return CLLocation(latitude: lat, longitude: lon)
+        } else {
+            return nil
+        }
     }
 }
 

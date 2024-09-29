@@ -35,8 +35,8 @@ public struct SearchResult: View {
                 Text(feature.subtitle)
                     .font(.caption)
             }
-            if let relativeTo {
-                let distance = relativeTo.distance(from: CLLocation(latitude: feature.geometry.coordinates[1], longitude: feature.geometry.coordinates[0]))
+            if let relativeTo, let center = feature.center {
+                let distance = relativeTo.distance(from: center)
                 Text(formatter.string(fromDistance: distance))
                     .font(.caption)
                     .frame(maxWidth: .infinity, alignment: .trailing)
