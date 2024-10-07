@@ -39,7 +39,8 @@ let stadiaMapsAPIKey = "YOUR-API-KEY"  // Replace with your API key
 // Somewhere in your view body....
 AutocompleteSearch(apiKey: stadiaMapsAPIKey, userLocation: userLocation.clLocation) { selection in
     // Do something with the selection.
-    // For example, you might do something like this to start navigation in an app using Ferrostar.
+    // For example, you might do something like this to start navigation
+    // in an app using Ferrostar (https://github.com/stadiamaps/ferrostar).
     Task {
         do {
             routes = try await ferrostarCore.getRoutes(initialLocation: userLocation, waypoints: [Waypoint(coordinate: GeographicCoordinate(lat: selection.geometry.coordinates[1], lng: selection.geometry.coordinates[0]), kind: .break)])
