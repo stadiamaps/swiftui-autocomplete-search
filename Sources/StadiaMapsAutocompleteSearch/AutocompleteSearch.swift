@@ -10,6 +10,7 @@ public struct AutocompleteSearch<T: View>: View {
 
     let userLocation: CLLocation?
     let limitLayers: [PeliasLayer]?
+    let minSearchLength: Int
     let onResultSelected: ((PeliasGeoJSONFeature) -> Void)?
     @ViewBuilder let resultViewBuilder: (PeliasGeoJSONFeature, CLLocation?) -> T
 
@@ -20,12 +21,14 @@ public struct AutocompleteSearch<T: View>: View {
     ///   - useEUEndpoint: Send requests to servers located in the European Union. Note that this may significantly degrade performance for users outside Europe.
     ///   - userLocation: If present, biases the search for results near a specific location. Additionally, results using the default (``SearchResult``) view will display the straight-line distances from this location.
     ///   - limitLayers: Optionally limits the searched layers to the specified set.
+    ///   - minSearchLength: Requires at least this many characters of input before searching. This can save API credits, but setting it higher than 1 or 2 will make the autocomplete functionality significantly less useful for some languages.
     ///   - onResultSelected: An optional callback invoked when the user taps on a result in the list. This allows you to build interactivity, such as launching navigation or flying to a location on a map.
     ///   - resultViewBuilder: An optional result view builder which lets you replace the default list element view (``SearchResult``) with your own.
     public init(apiKey: String,
                 useEUEndpoint: Bool = false,
                 userLocation: CLLocation? = nil,
                 limitLayers: [PeliasLayer]? = nil,
+                minSearchLength: Int = 1,
                 onResultSelected: ((PeliasGeoJSONFeature) -> Void)? = nil,
                 @ViewBuilder resultViewBuilder: @escaping (PeliasGeoJSONFeature, CLLocation?) -> T = { feature, userLocation in
                     SearchResult(feature: feature, relativeTo: userLocation)
@@ -37,14 +40,16 @@ public struct AutocompleteSearch<T: View>: View {
         }
         self.userLocation = userLocation
         self.limitLayers = limitLayers
+        self.minSearchLength = minSearchLength
         self.onResultSelected = onResultSelected
         self.resultViewBuilder = resultViewBuilder
     }
 
     public var body: some View {
-        // TODO: Language override?
-        // TODO: Min search length?
         TextField("Search", text: $searchText)
+            // TODO: Smarter safe area padding
+            .padding(8)
+            .textFieldStyle(.roundedBorder)
             .onChange(of: searchText) { query in
                 Task {
                     try await search(query: query, autocomplete: true)
@@ -62,6 +67,7 @@ public struct AutocompleteSearch<T: View>: View {
                     makeResultView(feature: result, relativeTo: userLocation)
                 }
             }
+            .scrollContentBackground(.hidden)
 
             if isLoading {
                 ProgressView()
@@ -70,7 +76,7 @@ public struct AutocompleteSearch<T: View>: View {
     }
 
     private func search(query: String, autocomplete: Bool) async throws {
-        guard !query.isEmpty else {
+        guard query.count >= minSearchLength else {
             searchResults = []
             return
         }
@@ -112,7 +118,7 @@ private let previewApiKey = "YOUR-API-KEY"
     if previewApiKey == "YOUR-API-KEY" {
         Text("You need an API key for this to be very useful. Get one at client.stadiamaps.com.")
     } else {
-        AutocompleteSearch(apiKey: previewApiKey) { selection in
+        AutocompleteSearch(apiKey: previewApiKey, minSearchLength: 2) { selection in
             print("Selected: \(selection)")
         }
     }

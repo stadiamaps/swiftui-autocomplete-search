@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
     name: "StadiaMapsAutocompleteSearch",
     platforms: [
-        .iOS(.v15),
+        .iOS(.v16),
         .macOS(.v14),
     ],
     products: [
