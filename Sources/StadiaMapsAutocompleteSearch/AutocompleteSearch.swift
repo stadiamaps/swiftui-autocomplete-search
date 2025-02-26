@@ -1,6 +1,7 @@
 import CoreLocation
 import StadiaMaps
 import SwiftUI
+import OSLog
 
 /// An autocomplete search view that searches for geographic locations as you type.
 public struct AutocompleteSearch<T: View>: View {
@@ -52,12 +53,12 @@ public struct AutocompleteSearch<T: View>: View {
             .textFieldStyle(.roundedBorder)
             .onChange(of: searchText) { query in
                 Task {
-                    try await search(query: query, autocomplete: true)
+                    await search(query: query, autocomplete: true)
                 }
             }
             .onSubmit {
                 Task {
-                    try await search(query: searchText, autocomplete: false)
+                    await search(query: searchText, autocomplete: false)
                 }
             }
 
@@ -75,7 +76,7 @@ public struct AutocompleteSearch<T: View>: View {
         }
     }
 
-    private func search(query: String, autocomplete: Bool) async throws {
+    private func search(query: String, autocomplete: Bool) async {
         guard query.count >= minSearchLength else {
             searchResults = []
             return
@@ -89,15 +90,32 @@ public struct AutocompleteSearch<T: View>: View {
 
         let result: GeocodeResponse
 
-        if autocomplete {
-            result = try await GeocodingAPI.autocomplete(text: query, focusPointLat: userLocation?.coordinate.latitude, focusPointLon: userLocation?.coordinate.longitude, layers: limitLayers)
-        } else {
-            result = try await GeocodingAPI.search(text: query, focusPointLat: userLocation?.coordinate.latitude, focusPointLon: userLocation?.coordinate.longitude, layers: limitLayers)
-        }
+        do {
+            if autocomplete {
+                result = try await GeocodingAPI.autocomplete(text: query, focusPointLat: userLocation?.coordinate.latitude, focusPointLon: userLocation?.coordinate.longitude, layers: limitLayers)
+            } else {
+                result = try await GeocodingAPI.search(text: query, focusPointLat: userLocation?.coordinate.latitude, focusPointLon: userLocation?.coordinate.longitude, layers: limitLayers)
+            }
 
-        // Only replace results if the text matches the current input
-        if query == searchText {
-            searchResults = result.features.filter({ $0.center != nil })
+            // Only replace results if the text matches the current input
+            if query == searchText {
+                searchResults = result.features.filter({ $0.center != nil })
+            }
+        } catch {
+            if let res = error as? ErrorResponse {
+                switch res {
+                case let .error(code, _, res, err):
+                    if code == 401 {
+                        Logger.api.error("API request failed with status \(code). This usually means your API key is invalid, missing, or has been revoked. Please check your API key at client.stadiamaps.com.")
+                    } else if code == 403 {
+                        Logger.api.error("API request failed with status \(code). You provided a valid API key, but your account does not have access to the \(autocomplete ? "autocomplete" : "search") API. You can upgrade your account at client.stadiamaps.com.")
+                    } else {
+                        Logger.api.error("API request failed with status \(code): \(err).")
+                    }
+                }
+            } else {
+                Logger.api.error("Error executing API request: \(error.localizedDescription)")
+            }
         }
     }
 
