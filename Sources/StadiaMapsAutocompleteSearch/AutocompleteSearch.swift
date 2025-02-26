@@ -5,14 +5,14 @@ import SwiftUI
 /// An autocomplete search view that searches for geographic locations as you type.
 public struct AutocompleteSearch<T: View>: View {
     @State private var searchText = ""
-    @State private var searchResults: [PeliasGeoJSONFeature] = []
+    @State private var searchResults: [GeocodingGeoJSONFeature] = []
     @State private var isLoading = false
 
     let userLocation: CLLocation?
-    let limitLayers: [PeliasLayer]?
+    let limitLayers: [GeocodingLayer]?
     let minSearchLength: Int
-    let onResultSelected: ((PeliasGeoJSONFeature) -> Void)?
-    @ViewBuilder let resultViewBuilder: (PeliasGeoJSONFeature, CLLocation?) -> T
+    let onResultSelected: ((GeocodingGeoJSONFeature) -> Void)?
+    @ViewBuilder let resultViewBuilder: (GeocodingGeoJSONFeature, CLLocation?) -> T
 
     /// Creates an search view with text input
     /// and a result list that updates as the user types.
@@ -27,10 +27,11 @@ public struct AutocompleteSearch<T: View>: View {
     public init(apiKey: String,
                 useEUEndpoint: Bool = false,
                 userLocation: CLLocation? = nil,
-                limitLayers: [PeliasLayer]? = nil,
+                limitLayers: [GeocodingLayer]? = nil,
                 minSearchLength: Int = 1,
                 onResultSelected: ((PeliasGeoJSONFeature) -> Void)? = nil,
-                @ViewBuilder resultViewBuilder: @escaping (PeliasGeoJSONFeature, CLLocation?) -> T = { feature, userLocation in
+                onResultSelected: ((GeocodingGeoJSONFeature) -> Void)? = nil,
+                @ViewBuilder resultViewBuilder: @escaping (GeocodingGeoJSONFeature, CLLocation?) -> T = { feature, userLocation in
                     SearchResult(feature: feature, relativeTo: userLocation)
                 })
     {
@@ -87,7 +88,7 @@ public struct AutocompleteSearch<T: View>: View {
             self.isLoading = false
         }
 
-        let result: PeliasResponse
+        let result: GeocodeResponse
 
         if autocomplete {
             result = try await GeocodingAPI.autocomplete(text: query, focusPointLat: userLocation?.coordinate.latitude, focusPointLon: userLocation?.coordinate.longitude, layers: limitLayers)
@@ -101,7 +102,7 @@ public struct AutocompleteSearch<T: View>: View {
         }
     }
 
-    private func makeResultView(feature: PeliasGeoJSONFeature, relativeTo: CLLocation?) -> some View {
+    private func makeResultView(feature: GeocodingGeoJSONFeature, relativeTo: CLLocation?) -> some View {
         resultViewBuilder(feature, relativeTo)
             .contentShape(.rect)
             .onTapGesture {

@@ -7,11 +7,11 @@ import SwiftUI
 /// the name of the feature, and (where available) some location context
 /// such as the city, region, or country containing the result.
 public struct SearchResult: View {
-    let feature: PeliasGeoJSONFeature
+    let feature: GeocodingGeoJSONFeature
     let relativeTo: CLLocation?
     let formatter: MKDistanceFormatter
 
-    public init(feature: PeliasGeoJSONFeature, relativeTo: CLLocation?, formatter: MKDistanceFormatter) {
+    public init(feature: GeocodingGeoJSONFeature, relativeTo: CLLocation?, formatter: MKDistanceFormatter) {
         self.feature = feature
         self.relativeTo = relativeTo
         self.formatter = formatter
@@ -19,7 +19,7 @@ public struct SearchResult: View {
 
     /// Creates a search result view wtih a default MKDistanceFormatter
     /// using the abbreviated unit style.
-    public init(feature: PeliasGeoJSONFeature, relativeTo: CLLocation?) {
+    public init(feature: GeocodingGeoJSONFeature, relativeTo: CLLocation?) {
         let formatter = MKDistanceFormatter()
         formatter.unitStyle = .abbreviated
 
@@ -32,8 +32,10 @@ public struct SearchResult: View {
                 .frame(width: 18)
             VStack(alignment: .leading) {
                 Text(feature.properties?.name ?? "<No info>")
-                Text(feature.subtitle)
-                    .font(.caption)
+                if let subtitle = feature.subtitle {
+                    Text(subtitle)
+                        .font(.caption)
+                }
             }
             if let relativeTo, let center = feature.center {
                 let distance = relativeTo.distance(from: center)
@@ -46,21 +48,21 @@ public struct SearchResult: View {
 }
 
 #Preview("Plain result") {
-    SearchResult(feature: PeliasGeoJSONFeature(type: .feature, geometry: GeoJSONPoint(type: .point, coordinates: [0, 0]), properties: PeliasGeoJSONProperties(layer: .address, name: "Test")), relativeTo: nil)
+    SearchResult(feature: GeocodingGeoJSONFeature(type: .feature, geometry: GeoJSONPoint(type: .point, coordinates: [0, 0]), properties: GeocodingGeoJSONProperties(layer: .address, name: "Test")), relativeTo: nil)
 }
 
 #Preview("Result with locality") {
-    SearchResult(feature: PeliasGeoJSONFeature(type: .feature, geometry: GeoJSONPoint(type: .point, coordinates: [0, 0]), properties: PeliasGeoJSONProperties(layer: .address, name: "Test", locality: "Some City")), relativeTo: nil)
+    SearchResult(feature: GeocodingGeoJSONFeature(type: .feature, geometry: GeoJSONPoint(type: .point, coordinates: [0, 0]), properties: GeocodingGeoJSONProperties(layer: .address, name: "Test", locality: "Some City")), relativeTo: nil)
 }
 
 #Preview("Relative distance") {
-    SearchResult(feature: PeliasGeoJSONFeature(type: .feature, geometry: GeoJSONPoint(type: .point, coordinates: [0, 0]), properties: PeliasGeoJSONProperties(layer: .address, name: "Test")), relativeTo: CLLocation(latitude: 0.25, longitude: 0.25))
+    SearchResult(feature: GeocodingGeoJSONFeature(type: .feature, geometry: GeoJSONPoint(type: .point, coordinates: [0, 0]), properties: GeocodingGeoJSONProperties(layer: .address, name: "Test")), relativeTo: CLLocation(latitude: 0.25, longitude: 0.25))
 }
 
 #Preview("Multiple Results") {
     List {
-        SearchResult(feature: PeliasGeoJSONFeature(type: .feature, geometry: GeoJSONPoint(type: .point, coordinates: [0, 0]), properties: PeliasGeoJSONProperties(layer: .address, name: "Test")), relativeTo: CLLocation(latitude: 0.25, longitude: 0.25))
-        SearchResult(feature: PeliasGeoJSONFeature(type: .feature, geometry: GeoJSONPoint(type: .point, coordinates: [0, 0]), properties: PeliasGeoJSONProperties(layer: .street, name: "Test")), relativeTo: CLLocation(latitude: 0.25, longitude: 0.25))
-        SearchResult(feature: PeliasGeoJSONFeature(type: .feature, geometry: GeoJSONPoint(type: .point, coordinates: [0, 0]), properties: PeliasGeoJSONProperties(layer: .venue, name: "Test")), relativeTo: CLLocation(latitude: 0.25, longitude: 0.25))
+        SearchResult(feature: GeocodingGeoJSONFeature(type: .feature, geometry: GeoJSONPoint(type: .point, coordinates: [0, 0]), properties: GeocodingGeoJSONProperties(layer: .address, name: "Test")), relativeTo: CLLocation(latitude: 0.25, longitude: 0.25))
+        SearchResult(feature: GeocodingGeoJSONFeature(type: .feature, geometry: GeoJSONPoint(type: .point, coordinates: [0, 0]), properties: GeocodingGeoJSONProperties(layer: .street, name: "Test", locality: "Some City")), relativeTo: CLLocation(latitude: 0.25, longitude: 0.25))
+        SearchResult(feature: GeocodingGeoJSONFeature(type: .feature, geometry: GeoJSONPoint(type: .point, coordinates: [0, 0]), properties: GeocodingGeoJSONProperties(layer: .venue, name: "Test")), relativeTo: CLLocation(latitude: 0.25, longitude: 0.25))
     }
 }

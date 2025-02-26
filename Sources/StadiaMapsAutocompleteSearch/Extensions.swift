@@ -3,14 +3,14 @@ import CoreLocation
 import StadiaMaps
 import SwiftUI
 
-extension PeliasGeoJSONFeature: Identifiable {
+extension GeocodingGeoJSONFeature: Identifiable {
     public var id: String? {
         properties?.gid
     }
 }
 
-public extension PeliasGeoJSONFeature {
-    var subtitle: String {
+public extension GeocodingGeoJSONFeature {
+    var subtitle: String? {
         let components: [String?]
         if let layer = properties?.layer {
             switch layer {
@@ -29,7 +29,12 @@ public extension PeliasGeoJSONFeature {
             components = []
         }
 
-        return components.compactMap({ $0 }).joined(separator: ", ")
+        let stringResult = components.compactMap({ $0 }).joined(separator: ", ")
+        if stringResult.isEmpty {
+            return nil
+        } else {
+            return stringResult
+        }
     }
 
     /// The approximate center of the feature.
@@ -49,7 +54,7 @@ public extension PeliasGeoJSONFeature {
     }
 }
 
-extension PeliasLayer {
+extension GeocodingLayer {
     var iconImage: Image {
         let imageName = switch self {
         case .venue:
