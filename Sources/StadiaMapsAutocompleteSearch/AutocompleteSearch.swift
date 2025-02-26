@@ -29,7 +29,6 @@ public struct AutocompleteSearch<T: View>: View {
                 userLocation: CLLocation? = nil,
                 limitLayers: [GeocodingLayer]? = nil,
                 minSearchLength: Int = 1,
-                onResultSelected: ((PeliasGeoJSONFeature) -> Void)? = nil,
                 onResultSelected: ((GeocodingGeoJSONFeature) -> Void)? = nil,
                 @ViewBuilder resultViewBuilder: @escaping (GeocodingGeoJSONFeature, CLLocation?) -> T = { feature, userLocation in
                     SearchResult(feature: feature, relativeTo: userLocation)
