@@ -6,14 +6,14 @@ import OSLog
 /// An autocomplete search view that searches for geographic locations as you type.
 public struct AutocompleteSearch<T: View>: View {
     @State private var searchText = ""
-    @State private var searchResults: [GeocodingGeoJSONFeature] = []
+    @State private var searchResults: [FeaturePropertiesV2] = []
     @State private var isLoading = false
 
     let userLocation: CLLocation?
-    let limitLayers: [GeocodingLayer]?
+    let limitLayers: [LayerId]?
     let minSearchLength: Int
-    let onResultSelected: ((GeocodingGeoJSONFeature) -> Void)?
-    @ViewBuilder let resultViewBuilder: (GeocodingGeoJSONFeature, CLLocation?) -> T
+    let onResultSelected: ((FeaturePropertiesV2) -> Void)?
+    @ViewBuilder let resultViewBuilder: (FeaturePropertiesV2, CLLocation?) -> T
 
     /// Creates an search view with text input
     /// and a result list that updates as the user types.
@@ -28,10 +28,10 @@ public struct AutocompleteSearch<T: View>: View {
     public init(apiKey: String,
                 useEUEndpoint: Bool = false,
                 userLocation: CLLocation? = nil,
-                limitLayers: [GeocodingLayer]? = nil,
+                limitLayers: [LayerId]? = nil,
                 minSearchLength: Int = 1,
-                onResultSelected: ((GeocodingGeoJSONFeature) -> Void)? = nil,
-                @ViewBuilder resultViewBuilder: @escaping (GeocodingGeoJSONFeature, CLLocation?) -> T = { feature, userLocation in
+                onResultSelected: ((FeaturePropertiesV2) -> Void)? = nil,
+                @ViewBuilder resultViewBuilder: @escaping (FeaturePropertiesV2, CLLocation?) -> T = { feature, userLocation in
                     SearchResult(feature: feature, relativeTo: userLocation)
                 })
     {
@@ -88,44 +88,78 @@ public struct AutocompleteSearch<T: View>: View {
             self.isLoading = false
         }
 
-        let result: GeocodeResponse
+        let features: [FeaturePropertiesV2]
 
         do {
             if autocomplete {
-                result = try await GeocodingAPI.autocomplete(text: query, focusPointLat: userLocation?.coordinate.latitude, focusPointLon: userLocation?.coordinate.longitude, layers: limitLayers)
+                let result = try await GeocodingAPI.autocompleteV2(text: query, focusPointLat: userLocation?.coordinate.latitude, focusPointLon: userLocation?.coordinate.longitude, layers: limitLayers)
+                features = result.features
             } else {
-                result = try await GeocodingAPI.search(text: query, focusPointLat: userLocation?.coordinate.latitude, focusPointLon: userLocation?.coordinate.longitude, layers: limitLayers)
+                let result = try await GeocodingAPI.search(text: query, focusPointLat: userLocation?.coordinate.latitude, focusPointLon: userLocation?.coordinate.longitude, layers: limitLayers?.map({ switch ($0) {
+                        case .poi: return .venue
+                        default: return GeocodingLayer(rawValue: $0.rawValue)!
+                    } }))
+                features = result.features.compactMap({ $0.upcast() })
             }
 
             // Only replace results if the text matches the current input
             if query == searchText {
-                searchResults = result.features.filter({ $0.center != nil })
+                searchResults = features
             }
         } catch {
-            if let res = error as? ErrorResponse {
-                switch res {
-                case let .error(code, _, res, err):
-                    if code == 401 {
-                        Logger.api.error("API request failed with status \(code). This usually means your API key is invalid, missing, or has been revoked. Please check your API key at client.stadiamaps.com.")
-                    } else if code == 403 {
-                        Logger.api.error("API request failed with status \(code). You provided a valid API key, but your account does not have access to the \(autocomplete ? "autocomplete" : "search") API. You can upgrade your account at client.stadiamaps.com.")
-                    } else {
-                        Logger.api.error("API request failed with status \(code): \(err).")
-                    }
-                }
-            } else {
-                Logger.api.error("Error executing API request: \(error.localizedDescription)")
-            }
+            handleError(error)
         }
     }
 
-    private func makeResultView(feature: GeocodingGeoJSONFeature, relativeTo: CLLocation?) -> some View {
+    private func makeResultView(feature: FeaturePropertiesV2, relativeTo: CLLocation?) -> some View {
         resultViewBuilder(feature, relativeTo)
             .contentShape(.rect)
             .onTapGesture {
-                onResultSelected?(feature)
+                guard let callback = onResultSelected else { return }
+
+                if feature.geometry != nil {
+                    callback(feature)
+                } else {
+                    Task(priority: .userInitiated) {
+                        do {
+                            let detailResult = try await getPlaceDetails(gid: feature.properties.gid)
+                            callback(detailResult)
+                        } catch {
+                            handleError(error)
+                        }
+                    }
+                }
             }
     }
+
+    private func getPlaceDetails(gid: String) async throws -> FeaturePropertiesV2 {
+        let response = try await GeocodingAPI.placeDetailsV2(ids: [gid])
+
+        if let result = response.features.first {
+            return result
+        } else {
+            throw InternalError.noResultsFoundForPlaceGID
+        }
+    }
+}
+
+func handleError(_ error: Error) {
+    if let res = error as? ErrorResponse {
+        switch res {
+        case let .error(code, _, _, err):
+            if code == 401 {
+                Logger.api.error("API request failed with status \(code). This usually means your API key is invalid, missing, or has been revoked. Please check your API key at client.stadiamaps.com.")
+            } else {
+                Logger.api.error("API request failed with status \(code): \(err).")
+            }
+        }
+    } else {
+        Logger.api.error("Error executing API request: \(error.localizedDescription)")
+    }
+}
+
+enum InternalError: Error {
+    case noResultsFoundForPlaceGID
 }
 
 // Set this to your own Stadia Maps API key.
@@ -164,7 +198,7 @@ private let previewApiKey = "YOUR-API-KEY"
         }) { feature, _ in
             HStack {
                 Image(systemName: "laser.burst")
-                Text(feature.properties?.name ?? "<No name>")
+                Text(feature.properties.name)
             }
         }
     }

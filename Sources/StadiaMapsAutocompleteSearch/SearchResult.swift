@@ -7,11 +7,11 @@ import SwiftUI
 /// the name of the feature, and (where available) some location context
 /// such as the city, region, or country containing the result.
 public struct SearchResult: View {
-    let feature: GeocodingGeoJSONFeature
+    let feature: FeaturePropertiesV2
     let relativeTo: CLLocation?
     let formatter: MKDistanceFormatter
 
-    public init(feature: GeocodingGeoJSONFeature, relativeTo: CLLocation?, formatter: MKDistanceFormatter) {
+    public init(feature: FeaturePropertiesV2, relativeTo: CLLocation?, formatter: MKDistanceFormatter) {
         self.feature = feature
         self.relativeTo = relativeTo
         self.formatter = formatter
@@ -19,7 +19,7 @@ public struct SearchResult: View {
 
     /// Creates a search result view wtih a default MKDistanceFormatter
     /// using the abbreviated unit style.
-    public init(feature: GeocodingGeoJSONFeature, relativeTo: CLLocation?) {
+    public init(feature: FeaturePropertiesV2, relativeTo: CLLocation?) {
         let formatter = MKDistanceFormatter()
         formatter.unitStyle = .abbreviated
 
@@ -28,16 +28,22 @@ public struct SearchResult: View {
 
     public var body: some View {
         HStack(spacing: 8) {
-            feature.properties?.layer?.iconImage
+            feature.properties.iconImage
                 .frame(width: 18)
             VStack(alignment: .leading) {
-                Text(feature.properties?.name ?? "<No info>")
-                if let subtitle = feature.subtitle {
+                Text(feature.properties.name)
+                if let subtitle = feature.properties.coarseLocation {
                     Text(subtitle)
                         .font(.caption)
                 }
             }
-            if let relativeTo, let center = feature.center {
+            if let distance = feature.properties.distance {
+                // Display the distance from the API, if available (note: originally in km)
+                Text(formatter.string(fromDistance: distance / 1000.0))
+                    .font(.caption)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+            }
+            else if let relativeTo, let center = feature.center {
                 let distance = relativeTo.distance(from: center)
                 Text(formatter.string(fromDistance: distance))
                     .font(.caption)
@@ -48,21 +54,20 @@ public struct SearchResult: View {
 }
 
 #Preview("Plain result") {
-    SearchResult(feature: GeocodingGeoJSONFeature(type: .feature, geometry: GeoJSONPoint(type: .point, coordinates: [0, 0]), properties: GeocodingGeoJSONProperties(layer: .address, name: "Test")), relativeTo: nil)
+    SearchResult(feature: FeaturePropertiesV2(properties: FeaturePropertiesV2Properties(gid: "foo", layer: "address", name: "Test", precision: .point)), relativeTo: nil)
 }
 
-#Preview("Result with locality") {
-    SearchResult(feature: GeocodingGeoJSONFeature(type: .feature, geometry: GeoJSONPoint(type: .point, coordinates: [0, 0]), properties: GeocodingGeoJSONProperties(layer: .address, name: "Test", locality: "Some City")), relativeTo: nil)
+#Preview("Result with coarse location") {
+    SearchResult(feature: FeaturePropertiesV2(properties: FeaturePropertiesV2Properties(coarseLocation: "Some City, USA", gid: "foo", layer: "address", name: "Test", precision: .point)), relativeTo: nil)
 }
 
 #Preview("Relative distance") {
-    SearchResult(feature: GeocodingGeoJSONFeature(type: .feature, geometry: GeoJSONPoint(type: .point, coordinates: [0, 0]), properties: GeocodingGeoJSONProperties(layer: .address, name: "Test")), relativeTo: CLLocation(latitude: 0.25, longitude: 0.25))
+    SearchResult(feature: FeaturePropertiesV2(properties: FeaturePropertiesV2Properties(coarseLocation: "Some City, USA", gid: "foo", layer: "address", name: "Test", precision: .point)), relativeTo: CLLocation(latitude: 0.25, longitude: 0.25))
 }
 
 #Preview("Multiple Results") {
     List {
-        SearchResult(feature: GeocodingGeoJSONFeature(type: .feature, geometry: GeoJSONPoint(type: .point, coordinates: [0, 0]), properties: GeocodingGeoJSONProperties(layer: .address, name: "Test")), relativeTo: CLLocation(latitude: 0.25, longitude: 0.25))
-        SearchResult(feature: GeocodingGeoJSONFeature(type: .feature, geometry: GeoJSONPoint(type: .point, coordinates: [0, 0]), properties: GeocodingGeoJSONProperties(layer: .street, name: "Test", locality: "Some City")), relativeTo: CLLocation(latitude: 0.25, longitude: 0.25))
-        SearchResult(feature: GeocodingGeoJSONFeature(type: .feature, geometry: GeoJSONPoint(type: .point, coordinates: [0, 0]), properties: GeocodingGeoJSONProperties(layer: .venue, name: "Test")), relativeTo: CLLocation(latitude: 0.25, longitude: 0.25))
+        SearchResult(feature: FeaturePropertiesV2(properties: FeaturePropertiesV2Properties(gid: "foo", layer: "address", name: "Test", precision: .point)), relativeTo: CLLocation(latitude: 0.25, longitude: 0.25))
+        SearchResult(feature: FeaturePropertiesV2(geometry: Point(coordinates: [0, 0], type: "Point"), properties: FeaturePropertiesV2Properties(coarseLocation: "Some City, USA", gid: "foo", layer: "address", name: "Test", precision: .point)), relativeTo: CLLocation(latitude: 0.25, longitude: 0.25))
     }
 }
