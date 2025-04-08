@@ -39,7 +39,7 @@ public struct SearchResult: View {
             }
             if let distance = feature.properties.distance {
                 // Display the distance from the API, if available (note: originally in km)
-                Text(formatter.string(fromDistance: distance / 1000.0))
+                Text(formatter.string(fromDistance: distance * 1000.0))
                     .font(.caption)
                     .frame(maxWidth: .infinity, alignment: .trailing)
             }
@@ -68,6 +68,7 @@ public struct SearchResult: View {
 #Preview("Multiple Results") {
     List {
         SearchResult(feature: FeaturePropertiesV2(properties: FeaturePropertiesV2Properties(gid: "foo", layer: "address", name: "Test", precision: .point)), relativeTo: CLLocation(latitude: 0.25, longitude: 0.25))
+        SearchResult(feature: FeaturePropertiesV2(properties: FeaturePropertiesV2Properties(distance: 12.0, gid: "foo", layer: "address", name: "Test", precision: .point)), relativeTo: nil)
         SearchResult(feature: FeaturePropertiesV2(geometry: Point(coordinates: [0, 0], type: "Point"), properties: FeaturePropertiesV2Properties(coarseLocation: "Some City, USA", gid: "foo", layer: "address", name: "Test", precision: .point)), relativeTo: CLLocation(latitude: 0.25, longitude: 0.25))
     }
 }
