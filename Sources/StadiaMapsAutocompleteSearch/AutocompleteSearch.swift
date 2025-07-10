@@ -64,7 +64,7 @@ public struct AutocompleteSearch<T: View>: View {
 
         ZStack {
             List {
-                ForEach(searchResults) { result in
+                ForEach(searchResults, id: \.properties.gid) { result in
                     makeResultView(feature: result, relativeTo: userLocation)
                 }
             }
