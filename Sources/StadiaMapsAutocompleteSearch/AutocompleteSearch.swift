@@ -9,6 +9,8 @@ public struct AutocompleteSearch<T: View>: View {
     @State private var searchResults: [FeaturePropertiesV2] = []
     @State private var isLoading = false
 
+    private let apiKey: String
+    private let useEUEndpoint : Bool
     let userLocation: CLLocation?
     let limitLayers: [LayerId]?
     let minSearchLength: Int
@@ -35,10 +37,8 @@ public struct AutocompleteSearch<T: View>: View {
                     SearchResult(feature: feature, relativeTo: userLocation)
                 })
     {
-        StadiaMapsAPI.customHeaders = ["Authorization": "Stadia-Auth \(apiKey)"]
-        if useEUEndpoint {
-            StadiaMapsAPI.basePath = "https://api-eu.stadiamaps.com"
-        }
+        self.apiKey = apiKey
+        self.useEUEndpoint = useEUEndpoint
         self.userLocation = userLocation
         self.limitLayers = limitLayers
         self.minSearchLength = minSearchLength
@@ -77,30 +77,14 @@ public struct AutocompleteSearch<T: View>: View {
     }
 
     private func search(query: String, autocomplete: Bool) async {
-        guard query.count >= minSearchLength else {
-            searchResults = []
-            return
-        }
-
         isLoading = true
 
         defer {
             self.isLoading = false
         }
 
-        let features: [FeaturePropertiesV2]
-
         do {
-            if autocomplete {
-                let result = try await GeocodingAPI.autocompleteV2(text: query, focusPointLat: userLocation?.coordinate.latitude, focusPointLon: userLocation?.coordinate.longitude, layers: limitLayers)
-                features = result.features
-            } else {
-                let result = try await GeocodingAPI.search(text: query, focusPointLat: userLocation?.coordinate.latitude, focusPointLon: userLocation?.coordinate.longitude, layers: limitLayers?.map({ switch ($0) {
-                        case .poi: return .venue
-                        default: return GeocodingLayer(rawValue: $0.rawValue)!
-                    } }))
-                features = result.features.compactMap({ $0.upcast() })
-            }
+            let features = try await GeocodingAPI.autocompletingSearch(query: query, autocomplete: autocomplete, apiKey: apiKey, useEUEndpoint: useEUEndpoint, userLocation: userLocation, minSearchLength: minSearchLength, limitLayers: limitLayers)
 
             // Only replace results if the text matches the current input
             if query == searchText {
