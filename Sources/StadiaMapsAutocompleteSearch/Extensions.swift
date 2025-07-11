@@ -73,7 +73,7 @@ private func contextComponentOrNil(gid: String?, name: String?, abbreviation: St
 }
 
 extension FeaturePropertiesV2Properties {
-    var iconImage: Image {
+    public var systemName: String {
         let imageName = switch self.layer {
         case "venue", "poi":
             "mappin.and.ellipse"
@@ -94,8 +94,11 @@ extension FeaturePropertiesV2Properties {
         default:
             "mappin.and.ellipse"
         }
+        return imageName
+    }
 
-        return Image(systemName: imageName)
+    var iconImage: Image {
+        return Image(systemName: systemName)
     }
 }
 
@@ -104,7 +107,7 @@ extension FeaturePropertiesV2 {
     ///
     /// Note that the API does not currently include any more info than a bounding box for non-point features.
     /// We just compute the mathematical middle for now.
-    var center: CLLocation? {
+    public var center: CLLocation? {
         if let geom = geometry, geom.type == "Point" {
             return CLLocation(latitude: geom.coordinates[1], longitude: geom.coordinates[0])
         } else if let bbox {
