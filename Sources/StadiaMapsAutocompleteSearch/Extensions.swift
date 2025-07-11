@@ -3,12 +3,6 @@ import CoreLocation
 import StadiaMaps
 import SwiftUI
 
-extension FeaturePropertiesV2: Identifiable {
-    public var id: String? {
-        properties.gid
-    }
-}
-
 /// Legacy support until we have a v2 /search endpoint
 public extension GeocodingGeoJSONFeature {
     var subtitle: String? {
