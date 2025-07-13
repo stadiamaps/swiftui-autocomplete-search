@@ -1,5 +1,6 @@
 import CoreLocation
 import StadiaMaps
+import StadiaMapsAutocompleteSearchAPI
 import SwiftUI
 import OSLog
 
@@ -101,29 +102,18 @@ public struct AutocompleteSearch<T: View>: View {
             .onTapGesture {
                 guard let callback = onResultSelected else { return }
 
-                if feature.geometry != nil {
-                    callback(feature)
-                } else {
-                    Task(priority: .userInitiated) {
-                        do {
-                            let detailResult = try await getPlaceDetails(gid: feature.properties.gid)
-                            callback(detailResult)
-                        } catch {
-                            handleError(error)
-                        }
+                Task(priority: .userInitiated) {
+                  do {
+                    let detailResults = try await feature.getPlaceGeometryDetails()
+                    guard let result = detailResults.first else {
+                      throw InternalError.noResultsFoundForPlaceGID
                     }
+                    callback(result)
+                  } catch {
+                    handleError(error)
+                  }
                 }
             }
-    }
-
-    private func getPlaceDetails(gid: String) async throws -> FeaturePropertiesV2 {
-        let response = try await GeocodingAPI.placeDetailsV2(ids: [gid])
-
-        if let result = response.features.first {
-            return result
-        } else {
-            throw InternalError.noResultsFoundForPlaceGID
-        }
     }
 }
 

@@ -36,3 +36,12 @@ public extension GeocodingAPI {
         return features
     }
 }
+
+public extension FeaturePropertiesV2 {
+    func getPlaceGeometryDetails() async throws -> [FeaturePropertiesV2] {
+        guard geometry == nil else { return [self] }
+
+        let response = try await GeocodingAPI.placeDetailsV2(ids: [properties.gid])
+        return response.features
+    }
+}
