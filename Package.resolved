@@ -1,5 +1,5 @@
 {
-  "originHash" : "e2900769efe45b62def113dd1a341902e1fa845b148ff617e281ee4394be4e97",
+  "originHash" : "68f61f6be42b2dbc0405481d0be9e1c47a9bdd513839356b7a521b9f5aea701d",
   "pins" : [
     {
       "identity" : "anycodable",
@@ -15,8 +15,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/stadiamaps/stadiamaps-api-swift",
       "state" : {
-        "revision" : "859b8c9194c93cd1a0723b0bbf5bc0b956209ba5",
-        "version" : "6.0.0"
+        "revision" : "232878311cba0cc43c43e6b7b994215f3d7ea65c",
+        "version" : "7.0.1"
       }
     }
   ],
