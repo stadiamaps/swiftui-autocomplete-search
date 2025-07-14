@@ -16,7 +16,7 @@ public struct AutocompleteSearch<T: View>: View {
     let limitLayers: [LayerId]?
     let minSearchLength: Int
     let onResultSelected: ((FeaturePropertiesV2) -> Void)?
-    @ViewBuilder let resultViewBuilder: (FeaturePropertiesV2, CLLocation?) -> T
+    @ViewBuilder let resultViewBuilder: (FeaturePropertiesV2) -> T
 
     /// Creates an search view with text input
     /// and a result list that updates as the user types.
@@ -34,8 +34,8 @@ public struct AutocompleteSearch<T: View>: View {
                 limitLayers: [LayerId]? = nil,
                 minSearchLength: Int = 1,
                 onResultSelected: ((FeaturePropertiesV2) -> Void)? = nil,
-                @ViewBuilder resultViewBuilder: @escaping (FeaturePropertiesV2, CLLocation?) -> T = { feature, userLocation in
-                    SearchResult(feature: feature, relativeTo: userLocation)
+                @ViewBuilder resultViewBuilder: @escaping (FeaturePropertiesV2) -> T = { feature in
+                    SearchResult(feature: feature)
                 })
     {
         self.apiKey = apiKey
@@ -66,7 +66,7 @@ public struct AutocompleteSearch<T: View>: View {
         ZStack {
             List {
                 ForEach(searchResults, id: \.properties.gid) { result in
-                    makeResultView(feature: result, relativeTo: userLocation)
+                    makeResultView(feature: result)
                 }
             }
             .scrollContentBackground(.hidden)
@@ -96,8 +96,8 @@ public struct AutocompleteSearch<T: View>: View {
         }
     }
 
-    private func makeResultView(feature: FeaturePropertiesV2, relativeTo: CLLocation?) -> some View {
-        resultViewBuilder(feature, relativeTo)
+    private func makeResultView(feature: FeaturePropertiesV2) -> some View {
+        resultViewBuilder(feature)
             .contentShape(.rect)
             .onTapGesture {
                 guard let callback = onResultSelected else { return }
@@ -169,7 +169,7 @@ private let previewApiKey = "YOUR-API-KEY"
     } else {
         AutocompleteSearch(apiKey: previewApiKey, onResultSelected: { selection in
             print("Selected: \(selection)")
-        }) { feature, _ in
+        }) { feature in
             HStack {
                 Image(systemName: "laser.burst")
                 Text(feature.properties.name)

@@ -26,11 +26,8 @@ public extension GeocodingAPI {
             let result = try await Self.autocompleteV2(text: query, focusPointLat: userLocation?.coordinate.latitude, focusPointLon: userLocation?.coordinate.longitude, layers: limitLayers)
             features = result.features
         } else {
-            let result = try await Self.search(text: query, focusPointLat: userLocation?.coordinate.latitude, focusPointLon: userLocation?.coordinate.longitude, layers: limitLayers?.map { switch $0 {
-            case .poi: return .venue
-            default: return GeocodingLayer(rawValue: $0.rawValue)!
-            } })
-            features = result.features.compactMap { $0.upcast() }
+            let result = try await Self.searchV2(text: query, focusPointLat: userLocation?.coordinate.latitude, focusPointLon: userLocation?.coordinate.longitude, layers: limitLayers)
+            features = result.features
         }
 
         return features
