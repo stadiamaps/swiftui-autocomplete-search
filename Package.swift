@@ -15,6 +15,10 @@ let package = Package(
             name: "StadiaMapsAutocompleteSearch",
             targets: ["StadiaMapsAutocompleteSearch"]
         ),
+        .library(
+            name: "StadiaMapsAutocompleteSearchAPI",
+            targets: ["StadiaMapsAutocompleteSearchAPI"]
+        ),
     ],
     dependencies: [
         .package(url: "https://github.com/stadiamaps/stadiamaps-api-swift", from: "6.0.0"),
@@ -22,8 +26,14 @@ let package = Package(
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
         // Targets can depend on other targets in this package and products from dependencies.
+      .target(
+          name: "StadiaMapsAutocompleteSearch",
+          dependencies: [
+              .byName(name: "StadiaMapsAutocompleteSearchAPI"),
+          ]
+      ),
         .target(
-            name: "StadiaMapsAutocompleteSearch",
+            name: "StadiaMapsAutocompleteSearchAPI",
             dependencies: [
                 .product(name: "StadiaMaps", package: "stadiamaps-api-swift"),
             ]
